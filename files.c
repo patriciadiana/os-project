@@ -4,12 +4,27 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <time.h>
 
+char *getName(char *path)
+{
+    char *name = strrchr(path, '/');
+    if (name == NULL)
+    {
+        name = path;
+    }
+    else
+    {
+        name++;
+    }
+    return name;
+}
+
 void print_menu_file()
 {
-    printf("A) regular file\n");
+    printf("A) regular file:\n");
     printf("-n: file name\n");
     printf("-d: file size\n");
     printf("-h: number of hard links\n");
@@ -31,16 +46,7 @@ void handle_regular_file(char *filename)
         {
         case 'n':
         {
-            char *name = strrchr(filename, '/');
-            if (name == NULL)
-            {
-                name = filename;
-            }
-            else
-            {
-                name++;
-            }
-            printf("file name: %s\n", name);
+            printf("file name: %s\n", getName(filename));
             break;
         }
         case 'd':
@@ -80,16 +86,19 @@ void handle_regular_file(char *filename)
                 printf("error: unable to stat %s\n", filename);
                 break;
             }
-            printf("access rights: ");
-            printf((filestat.st_mode & S_IRUSR) ? "r" : "-");
-            printf((filestat.st_mode & S_IWUSR) ? "w" : "-");
-            printf((filestat.st_mode & S_IXUSR) ? "x" : "-");
-            printf((filestat.st_mode & S_IRGRP) ? "r" : "-");
-            printf((filestat.st_mode & S_IWGRP) ? "w" : "-");
-            printf((filestat.st_mode & S_IXGRP) ? "x" : "-");
-            printf((filestat.st_mode & S_IROTH) ? "r" : "-");
-            printf((filestat.st_mode & S_IWOTH) ? "w" : "-");
-            printf((filestat.st_mode & S_IXOTH) ? "x" : "-");
+            printf("access rights:\n");
+            printf("user:\n");
+            printf((filestat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
+            printf((filestat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
+            printf((filestat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+            printf("group:\n");
+            printf((filestat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
+            printf((filestat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
+            printf((filestat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+            printf("others:\n");
+            printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
+            printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
+            printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
             printf("\n");
             break;
         }
@@ -117,7 +126,7 @@ void handle_regular_file(char *filename)
 
 void print_menu_link()
 {
-    printf("B) symbolic link\n");
+    printf("B) symbolic link:\n");
     printf("-n: link name\n");
     printf("-l: delete link\n");
     printf("-d: size of the link\n");
@@ -138,16 +147,7 @@ void handle_symbolic_link(char *linkname)
         {
         case 'n':
         {
-            char *name = strrchr(linkname, '/');
-            if (name == NULL)
-            {
-                name = linkname;
-            }
-            else
-            {
-                name++;
-            }
-            printf("file name: %s\n", name);
+            printf("file name: %s\n", getName(linkname));
             break;
         }
         case 'l':
@@ -188,16 +188,19 @@ void handle_symbolic_link(char *linkname)
                 printf("error: unable to stat %s\n", linkname);
                 break;
             }
-            printf("access rights: ");
-            printf((linkstat.st_mode & S_IRUSR) ? "r" : "-");
-            printf((linkstat.st_mode & S_IWUSR) ? "w" : "-");
-            printf((linkstat.st_mode & S_IXUSR) ? "x" : "-");
-            printf((linkstat.st_mode & S_IRGRP) ? "r" : "-");
-            printf((linkstat.st_mode & S_IWGRP) ? "w" : "-");
-            printf((linkstat.st_mode & S_IXGRP) ? "x" : "-");
-            printf((linkstat.st_mode & S_IROTH) ? "r" : "-");
-            printf((linkstat.st_mode & S_IWOTH) ? "w" : "-");
-            printf((linkstat.st_mode & S_IXOTH) ? "x" : "-");
+            printf("access rights:\n");
+            printf("user:\n");
+            printf((linkstat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
+            printf((linkstat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
+            printf((linkstat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+            printf("group:\n");
+            printf((linkstat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
+            printf((linkstat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
+            printf((linkstat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+            printf("others:\n");
+            printf((linkstat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
+            printf((linkstat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
+            printf((linkstat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
             printf("\n");
             break;
         }
@@ -206,6 +209,99 @@ void handle_symbolic_link(char *linkname)
             printf("invalid menu option. try again\n");
             break;
         }
+        }
+    }
+}
+
+void print_menu_directory()
+{
+    printf("C) directory:\n");
+    printf("-n: name\n");
+    printf("-d: size\n");
+    printf("-a: access rights\n");
+    printf("-c: total number of files with the c. extension\n");
+}
+
+void handle_directory(char *directorypath)
+{
+    char option[10];
+    print_menu_directory();
+    printf("choose an option:\n");
+    scanf("%s", option);
+    struct dirent *entry;
+    struct stat filestat;
+    DIR *dir = opendir(directorypath);
+    int cFiles=0;
+    for (int i = 1; i < strlen(option); i++)
+    {
+        switch (option[i])
+        {
+            case 'n':
+            {
+                printf("file name: %s\n", getName(directorypath));
+                break;
+            }
+            case 'd':
+            {
+                if (lstat(directorypath, &filestat) < 0)
+                {
+                    printf("error: unable to stat %s\n", directorypath);
+                    break;
+                }
+                printf("file size: %lld bytes\n", (long long)filestat.st_size);
+                break;   
+            }
+            case 'a':
+            {
+                if (lstat(directorypath, &filestat) < 0)
+                {
+                    printf("error: unable to stat %s\n", directorypath);
+                    break;
+                }
+                printf("access rights:\n");
+                printf("user:\n");
+                printf((filestat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
+                printf((filestat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
+                printf((filestat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+                printf("group:\n");
+                printf((filestat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
+                printf((filestat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
+                printf((filestat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+                printf("others:\n");
+                printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
+                printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
+                printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+                printf("\n");
+                break;
+            }
+            case 'c':
+            {
+                if(dir != NULL)
+                {
+                    while((entry=readdir(dir))!=NULL)
+                    {
+                        char copy[20];
+                        strcpy(copy, entry->d_name);
+                        if(copy[strlen(entry->d_name)-1]=='c' && copy[strlen(entry->d_name)-2]=='.')
+                        {
+                            cFiles++;
+                        }
+                    }
+                }
+                else
+                {
+                    perror("couldn't open directory");
+                    return;
+                }
+                printf("number of files with .c extension: %d\n", cFiles);
+                closedir(dir);
+                break;
+            }
+            default:
+            {
+                printf("invalid menu option. try again\n");
+                break;
+            }
         }
     }
 }
@@ -222,15 +318,18 @@ int main(int argc, char *argv[])
         }
         if (S_ISREG(itemstat.st_mode))
         {
+            printf("%s %s\n", getName(argv[i]), "regular file");
             handle_regular_file(argv[i]);
         }
         else if (S_ISLNK(itemstat.st_mode))
         {
+            printf("%s %s\n", getName(argv[i]), "symbolic link");
             handle_symbolic_link(argv[i]);
         }
         else if (S_ISDIR(itemstat.st_mode))
         {
-            printf("directory: %s\n", argv[i]);
+            printf("%s %s\n", getName(argv[i]), "directory");
+            handle_directory(argv[i]);
         }
         else
         {
