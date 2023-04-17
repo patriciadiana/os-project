@@ -99,7 +99,6 @@ void handle_regular_file(char *filename)
             printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
             printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
             printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
-            printf("\n");
             break;
         }
         case 'l':
@@ -201,7 +200,6 @@ void handle_symbolic_link(char *linkname)
             printf((linkstat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
             printf((linkstat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
             printf((linkstat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
-            printf("\n");
             break;
         }
         default:
@@ -271,7 +269,6 @@ void handle_directory(char *directorypath)
                 printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
                 printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
                 printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
-                printf("\n");
                 break;
             }
             case 'c':
