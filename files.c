@@ -2,11 +2,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <limits.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <time.h>
+#include <stdlib.h>
 
 char *getName(char *path)
 {
@@ -306,6 +308,8 @@ void handle_directory(char *directorypath)
 int main(int argc, char *argv[])
 {
     struct stat itemstat;
+    pid_t pid, pid1, pid2;
+    int pidCount=0;
     for (int i = 1; i < argc; i++)
     {
         if (lstat(argv[i], &itemstat) < 0)
@@ -313,25 +317,99 @@ int main(int argc, char *argv[])
             printf("error: unable to stat %s\n", argv[i]);
             continue;
         }
+        
         if (S_ISREG(itemstat.st_mode))
         {
-            printf("%s %s\n", getName(argv[i]), "regular file");
-            handle_regular_file(argv[i]);
+            char *name = getName(argv[i]);
+            printf("%s %s\n", name, "regular file");
+            if(name[strlen(name)-2] == '.' && name[strlen(name)-1] == 'c')
+            {
+                if((pid1 = fork()) < 0)
+                {
+                    printf("failed to create the child process\n");
+                    exit(1);
+                }
+                pidCount++;
+                if(pid1 == 0)
+                {
+                    char *arguments[] = {"bash", "errors.sh", name, "redirectError.txt", NULL};
+                    printf("this is a .c file, executing script\n");
+                    if(execv("/usr/bin/bash", arguments)==-1)
+                    {
+                        perror("execv");
+                        exit(EXIT_FAILURE);
+                    }
+                    exit(0);
+                }
+            }
         }
-        else if (S_ISLNK(itemstat.st_mode))
+
+        if (S_ISDIR(itemstat.st_mode))
+            {
+                char *name = getName(argv[i]);
+                printf("%s %s\n", name, "directory");
+                if((pid2 = fork()) < 0)
+                {
+                    printf("failed to create the child process\n");
+                    exit(1);
+                }
+                pidCount++;
+                if(pid2 == 0)
+                {
+                    char *arguments[] = {"touch", "newFile.txt", NULL};
+                    printf("creating a txt file with the name 'newFile'\n");
+                    if(execv("/usr/bin/touch", arguments)==-1)
+                    {
+                        perror("execv");
+                        exit(EXIT_FAILURE);
+                    }
+                    exit(0);
+                }
+            }
+        
+        if((pid = fork()) < 0)
         {
-            printf("%s %s\n", getName(argv[i]), "symbolic link");
-            handle_symbolic_link(argv[i]);
+            printf("failed to create the child process \n");
+            exit(1);
         }
-        else if (S_ISDIR(itemstat.st_mode))
+        if(pid == 0)
         {
-            printf("%s %s\n", getName(argv[i]), "directory");
-            handle_directory(argv[i]);
+            if (S_ISREG(itemstat.st_mode))
+            {
+                printf("%s %s\n", getName(argv[i]), "regular file");
+                handle_regular_file(argv[i]);
+            }
+            else if (S_ISLNK(itemstat.st_mode))
+            {
+                printf("%s %s\n", getName(argv[i]), "symbolic link");
+                handle_symbolic_link(argv[i]);
+            }
+            else if (S_ISDIR(itemstat.st_mode))
+            {
+                printf("%s %s\n", getName(argv[i]), "directory");
+                handle_directory(argv[i]);
+            }
+            else
+            {
+                printf("unknown file type: %s\n", argv[i]);
+            }
         }
-        else
-        {
-            printf("unknown file type: %s\n", argv[i]);
-        }
+        wait(NULL);
+        wait(NULL);
+        // for(int i=0; i<pidCount;i++)
+        // {
+        //     int wstatus;
+        //     pid_t w = wait(&wstatus);
+        //     if (w == -1) 
+        //     {
+        //         perror("waitpid");
+        //         exit(EXIT_FAILURE);
+        //     }
+        //     if (WIFEXITED(wstatus)) 
+        //     {
+        //         printf("exited child process with id %d, status=%d\n", w, WEXITSTATUS(wstatus));
+        //     }
+        // }
     }
     return 0;
 }
