@@ -305,6 +305,28 @@ void handle_directory(char *directorypath)
     }
 }
 
+int computeScore(int errors, int warnings)
+{
+    int score;
+    if(errors == 0 && warnings == 0)
+    {
+        score = 10;
+    }
+    if(errors >= 1)
+    {
+        score = 1;
+    }
+    if(errors == 0 && warnings > 10)
+    {
+        score = 2;
+    }
+    if(errors == 0 && warnings <= 10)
+    {
+        score = 2+8*(10-warnings)/10;
+    }
+    return score;
+}
+
 int main(int argc, char *argv[])
 {
     struct stat itemstat;
@@ -345,33 +367,34 @@ int main(int argc, char *argv[])
         }
 
         if (S_ISDIR(itemstat.st_mode))
+        {
+            char *name = getName(argv[i]);
+            printf("%s %s\n", name, "directory");
+            if((pid2 = fork()) < 0)
             {
-                char *name = getName(argv[i]);
-                printf("%s %s\n", name, "directory");
-                if((pid2 = fork()) < 0)
-                {
-                    printf("failed to create the child process\n");
-                    exit(1);
-                }
-                pidCount++;
-                if(pid2 == 0)
-                {
-                    char *arguments[] = {"touch", "newFile.txt", NULL};
-                    printf("creating a txt file with the name 'newFile'\n");
-                    if(execv("/usr/bin/touch", arguments)==-1)
-                    {
-                        perror("execv");
-                        exit(EXIT_FAILURE);
-                    }
-                    exit(0);
-                }
+                printf("failed to create the child process\n");
+                exit(1);
             }
+            pidCount++;
+            if(pid2 == 0)
+            {
+                char *arguments[] = {"touch", "newFile.txt", NULL};
+                printf("creating a txt file with the name 'newFile'\n");
+                if(execv("/usr/bin/touch", arguments)==-1)
+                {
+                    perror("execv");
+                    exit(EXIT_FAILURE);
+                }
+                exit(0);
+            }
+        }
         
         if((pid = fork()) < 0)
         {
             printf("failed to create the child process \n");
             exit(1);
         }
+        pidCount++;
         if(pid == 0)
         {
             if (S_ISREG(itemstat.st_mode))
@@ -393,23 +416,22 @@ int main(int argc, char *argv[])
             {
                 printf("unknown file type: %s\n", argv[i]);
             }
+            exit(0);
         }
-        wait(NULL);
-        wait(NULL);
-        // for(int i=0; i<pidCount;i++)
-        // {
-        //     int wstatus;
-        //     pid_t w = wait(&wstatus);
-        //     if (w == -1) 
-        //     {
-        //         perror("waitpid");
-        //         exit(EXIT_FAILURE);
-        //     }
-        //     if (WIFEXITED(wstatus)) 
-        //     {
-        //         printf("exited child process with id %d, status=%d\n", w, WEXITSTATUS(wstatus));
-        //     }
-        // }
+        for(int i=0; i<pidCount;i++)
+        {
+            int wstatus;
+            pid_t w = wait(&wstatus);
+            if (w == -1) 
+            {
+                perror("waitpid");
+                exit(EXIT_FAILURE);
+            }
+            if (WIFEXITED(wstatus)) 
+            {
+                printf("exited child process with id %d, status=%d\n", w, WEXITSTATUS(wstatus));
+            }
+        }
     }
     return 0;
 }
