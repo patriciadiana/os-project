@@ -38,6 +38,7 @@ void print_menu_file()
 void handle_regular_file(char *filename)
 {
     char option[10];
+    start_file:
     print_menu_file();
     printf("choose an option:\n");
     scanf("%s", option);
@@ -90,17 +91,23 @@ void handle_regular_file(char *filename)
             }
             printf("access rights:\n");
             printf("user:\n");
+            printf("\n");
             printf((filestat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
             printf((filestat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
             printf((filestat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+            printf("\n");
             printf("group:\n");
+            printf("\n");
             printf((filestat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
             printf((filestat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
             printf((filestat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+            printf("\n");
             printf("others:\n");
+            printf("\n");
             printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
             printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
             printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+            printf("\n");
             break;
         }
         case 'l':
@@ -119,6 +126,7 @@ void handle_regular_file(char *filename)
         default:
         {
             printf("invalid menu option. try again\n");
+            goto start_file;
             break;
         }
         }
@@ -138,6 +146,7 @@ void print_menu_link()
 void handle_symbolic_link(char *linkname)
 {
     char option[10];
+    start_link:
     print_menu_link();
     printf("choose an option:\n");
     scanf("%s", option);
@@ -148,7 +157,7 @@ void handle_symbolic_link(char *linkname)
         {
         case 'n':
         {
-            printf("file name: %s\n", getName(linkname));
+            printf("linkl name: %s\n", getName(linkname));
             break;
         }
         case 'l':
@@ -191,22 +200,29 @@ void handle_symbolic_link(char *linkname)
             }
             printf("access rights:\n");
             printf("user:\n");
+            printf("\n");
             printf((linkstat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
             printf((linkstat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
             printf((linkstat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+            printf("\n");
             printf("group:\n");
+            printf("\n");
             printf((linkstat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
             printf((linkstat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
             printf((linkstat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+            printf("\n");
             printf("others:\n");
+            printf("\n");
             printf((linkstat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
             printf((linkstat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
             printf((linkstat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+            printf("\n");
             break;
         }
         default:
         {
             printf("invalid menu option. try again\n");
+            goto start_link;
             break;
         }
         }
@@ -225,6 +241,7 @@ void print_menu_directory()
 void handle_directory(char *directorypath)
 {
     char option[10];
+    start_directory:
     print_menu_directory();
     printf("choose an option:\n");
     scanf("%s", option);
@@ -238,7 +255,7 @@ void handle_directory(char *directorypath)
         {
             case 'n':
             {
-                printf("file name: %s\n", getName(directorypath));
+                printf("directory name: %s\n", getName(directorypath));
                 break;
             }
             case 'd':
@@ -260,17 +277,23 @@ void handle_directory(char *directorypath)
                 }
                 printf("access rights:\n");
                 printf("user:\n");
+                printf("\n");
                 printf((filestat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
                 printf((filestat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
                 printf((filestat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+                printf("\n");
                 printf("group:\n");
+                printf("\n");
                 printf((filestat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
                 printf((filestat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
                 printf((filestat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+                printf("\n");
                 printf("others:\n");
+                printf("\n");
                 printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
                 printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
                 printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+                printf("\n");
                 break;
             }
             case 'c':
@@ -299,6 +322,7 @@ void handle_directory(char *directorypath)
             default:
             {
                 printf("invalid menu option. try again\n");
+                goto start_directory;
                 break;
             }
         }
@@ -327,33 +351,72 @@ int computeScore(int errors, int warnings)
     return score;
 }
 
+void change_permission(char *linkname)
+{
+    char *arguments[] = {"chmod", "-v", "760", linkname, NULL};
+    printf("Changing permissions to 'rwxrw----'\n");
+    if(execv("/usr/bin/chmod", arguments) == -1) 
+    {
+        perror("execv");
+        exit(EXIT_FAILURE);
+    }
+}
+
+int countLines(char file[])
+{
+    FILE *fin = fopen(file, "r");
+    int count=1;
+    char c;
+    while((c = fgetc(fin)) != EOF)
+    {
+        if(c=='\n')
+        {
+            count++;
+        }
+    }
+    fclose(fin);
+    return count;
+    
+}
+
 int main(int argc, char *argv[])
 {
     struct stat itemstat;
-    pid_t pid, pid1, pid2;
+    pid_t pid1, pid2;
     int pidCount=0;
+    int fd[2];
+    char buff[1024];
+
     for (int i = 1; i < argc; i++)
-    {
+    { 
         if (lstat(argv[i], &itemstat) < 0)
         {
             printf("error: unable to stat %s\n", argv[i]);
             continue;
         }
-        
+
+        if(pipe(fd) == -1)
+        {
+            perror("pipe");
+            exit(EXIT_FAILURE);
+        }
+
         if (S_ISREG(itemstat.st_mode))
         {
             char *name = getName(argv[i]);
-            printf("%s %s\n", name, "regular file");
             if(name[strlen(name)-2] == '.' && name[strlen(name)-1] == 'c')
             {
-                if((pid1 = fork()) < 0)
+                if((pid2 = fork()) < 0)
                 {
-                    printf("failed to create the child process\n");
+                    printf("failed to create the second child process\n");
                     exit(1);
                 }
                 pidCount++;
-                if(pid1 == 0)
+                if(pid2 == 0)
                 {
+                    /*closing the reading end*/
+                    close(fd[0]);
+                    dup2(fd[1], STDOUT_FILENO);
                     char *arguments[] = {"bash", "errors.sh", name, "redirectError.txt", NULL};
                     printf("this is a .c file, executing script\n");
                     if(execv("/usr/bin/bash", arguments)==-1)
@@ -363,23 +426,70 @@ int main(int argc, char *argv[])
                     }
                     exit(0);
                 }
+                /*parent process*/
+                else
+                {
+                    int errors, warnings, score;
+                    close(fd[1]);
+                    FILE* fout = fopen("grades.txt", "a+");
+                    ssize_t num_read;
+                    while ((num_read = read(fd[0], buff, sizeof(buff))) > 0) {
+                        sscanf(buff, "number of errors: %d number of warnings: %d", &errors, &warnings);
+                    }
+                    score = computeScore(errors,warnings);
+                    fprintf(fout, "%s:%d\n", name, score);
+                    printf("The score was printed in the file 'grades.txt'\n");
+                    fclose(fout);
+                }
+            }
+            else
+            {
+                if((pid2 = fork()) < 0)
+                {
+                    printf("failed to create the second child process\n");
+                    exit(1);
+                }
+                pidCount++;
+                if(pid2 == 0)
+                {
+                    /*closing the reading end*/
+                    close(fd[0]);
+                    printf("the file %s has %d lines\n", name, countLines(argv[i]));
+                    exit(0);
+                }
+            }
+        }
+        if (S_ISLNK(itemstat.st_mode))
+        {
+            char *name = getName(argv[i]);
+            if((pid2 = fork()) < 0)
+            {
+                printf("failed to create the second child process\n");
+                exit(1);
+            }
+            pidCount++;
+            if(pid2 == 0)
+            {
+                change_permission(name);
             }
         }
 
         if (S_ISDIR(itemstat.st_mode))
         {
             char *name = getName(argv[i]);
-            printf("%s %s\n", name, "directory");
             if((pid2 = fork()) < 0)
             {
-                printf("failed to create the child process\n");
+                printf("failed to create the second child process\n");
                 exit(1);
             }
             pidCount++;
             if(pid2 == 0)
             {
-                char *arguments[] = {"touch", "newFile.txt", NULL};
-                printf("creating a txt file with the name 'newFile'\n");
+                char filename[50] = "";
+                strcpy(filename, name);
+                strcat(filename, "_file.txt");
+                char *arguments[] = {"touch", filename, NULL};
+                printf("creating a txt file with the name '<dir_name>_file.txt'\n");
                 if(execv("/usr/bin/touch", arguments)==-1)
                 {
                     perror("execv");
@@ -389,13 +499,13 @@ int main(int argc, char *argv[])
             }
         }
         
-        if((pid = fork()) < 0)
+        if((pid1 = fork()) < 0)
         {
             printf("failed to create the child process \n");
             exit(1);
         }
         pidCount++;
-        if(pid == 0)
+        if(pid1 == 0)
         {
             if (S_ISREG(itemstat.st_mode))
             {
@@ -418,6 +528,7 @@ int main(int argc, char *argv[])
             }
             exit(0);
         }
+        printf("PID COUNT %d\n", pidCount);
         for(int i=0; i<pidCount;i++)
         {
             int wstatus;
@@ -429,9 +540,11 @@ int main(int argc, char *argv[])
             }
             if (WIFEXITED(wstatus)) 
             {
-                printf("exited child process with id %d, status=%d\n", w, WEXITSTATUS(wstatus));
+                printf("The process with PID %d has ended with the exit code <%d>\n", w, WEXITSTATUS(wstatus));
             }
         }
+        pidCount = 0;
     }
+    
     return 0;
 }
