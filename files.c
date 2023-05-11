@@ -10,6 +10,7 @@
 #include <time.h>
 #include <stdlib.h>
 
+/*Used to extract the name from a given path.*/
 char *getName(char *path)
 {
     char *name = strrchr(path, '/');
@@ -24,9 +25,10 @@ char *getName(char *path)
     return name;
 }
 
+/*Regular file menu display.*/
 void print_menu_file()
 {
-    printf("A) regular file:\n");
+    printf("A) Regular file:\n");
     printf("-n: file name\n");
     printf("-d: file size\n");
     printf("-h: number of hard links\n");
@@ -35,12 +37,13 @@ void print_menu_file()
     printf("-l: create a symbolic link, give: link name\n");
 }
 
+/*Regular file handling.*/
 void handle_regular_file(char *filename)
 {
     char option[10];
     start_file:
     print_menu_file();
-    printf("choose an option:\n");
+    printf("Choose an option from the menu:\n");
     scanf("%s", option);
     struct stat filestat;
     for (int i = 1; i < strlen(option); i++)
@@ -49,83 +52,84 @@ void handle_regular_file(char *filename)
         {
         case 'n':
         {
-            printf("file name: %s\n", getName(filename));
+            printf("File name: %s\n", getName(filename));
             break;
         }
         case 'd':
         {
             if (lstat(filename, &filestat) < 0)
             {
-                printf("error: unable to stat %s\n", filename);
+                printf("Error: unable to stat %s\n", filename);
                 break;
             }
-            printf("file size: %lld bytes\n", (long long)filestat.st_size);
+            printf("File size: %lld bytes\n", (long long)filestat.st_size);
             break;
         }
         case 'h':
         {
             if (lstat(filename, &filestat) < 0)
             {
-                printf("error: unable to stat %s\n", filename);
+                printf("Error: unable to stat %s\n", filename);
                 break;
             }
-            printf("number of hard links: %ld\n", (long)filestat.st_nlink);
+            printf("Number of hard links: %ld\n", (long)filestat.st_nlink);
             break;
         }
         case 'm':
         {
             if (lstat(filename, &filestat) < 0)
             {
-                printf("error: unable to stat %s\n", filename);
+                printf("Error: unable to stat %s\n", filename);
                 break;
             }
-            printf("time of last modification: %s", ctime(&filestat.st_mtime));
+            printf("Time of last modification: %s", ctime(&filestat.st_mtime));
             break;
         }
         case 'a':
         {
             if (lstat(filename, &filestat) < 0)
             {
-                printf("error: unable to stat %s\n", filename);
+                printf("Error: unable to stat %s\n", filename);
                 break;
             }
-            printf("access rights:\n");
-            printf("user:\n");
+            printf("Access rights:\n");
             printf("\n");
-            printf((filestat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
-            printf((filestat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
-            printf((filestat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+            printf("User:\n");
             printf("\n");
-            printf("group:\n");
+            printf((filestat.st_mode & S_IRUSR) ? "Read-yes\n" : "Read-yes\n");
+            printf((filestat.st_mode & S_IWUSR) ? "Write-yes\n" : "Write-no\n");
+            printf((filestat.st_mode & S_IXUSR) ? "Exec-yes\n" : "Exec-no\n");
             printf("\n");
-            printf((filestat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
-            printf((filestat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
-            printf((filestat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+            printf("Group:\n");
             printf("\n");
-            printf("others:\n");
+            printf((filestat.st_mode & S_IRGRP) ? "Read-yes\n" : "Read-yes\n");
+            printf((filestat.st_mode & S_IWGRP) ? "Write-yes\n" : "Rrite-no\n");
+            printf((filestat.st_mode & S_IXGRP) ? "Exec-yes\n" : "Exec-no\n");
             printf("\n");
-            printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
-            printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
-            printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+            printf("Others:\n");
+            printf("\n");
+            printf((filestat.st_mode & S_IROTH) ? "Read-yes\n" : "Read-yes\n");
+            printf((filestat.st_mode & S_IWOTH) ? "Write-yes\n" : "Write-no\n");
+            printf((filestat.st_mode & S_IXOTH) ? "Exec-yes\n" : "Exec-no\n");
             printf("\n");
             break;
         }
         case 'l':
         {
             char linkname[20];
-            printf("enter link name: ");
+            printf("Enter link name: ");
             scanf("%s", linkname);
             if (symlink(filename, linkname) < 0)
             {
-                printf("error: unable to create symbolic link %s\n", linkname);
+                printf("Error: unable to create symbolic link %s\n", linkname);
                 break;
             }
-            printf("symbolic link %s created for file %s\n", linkname, filename);
+            printf("Symbolic link %s created for file %s\n", linkname, filename);
             break;
         }
         default:
         {
-            printf("invalid menu option. try again\n");
+            printf("Invalid menu option. Try again\n");
             goto start_file;
             break;
         }
@@ -133,22 +137,24 @@ void handle_regular_file(char *filename)
     }
 }
 
+/*Link menu display.*/
 void print_menu_link()
 {
-    printf("B) symbolic link:\n");
+    printf("B) Symbolic link:\n");
     printf("-n: link name\n");
-    printf("-l: delete link\n");
-    printf("-d: size of the link\n");
-    printf("-t: size of the target\n");
+    printf("-l: delete symbolic link\n");
+    printf("-d: size of the symbolic link\n");
+    printf("-t: size of the target file\n");
     printf("-a: access rights\n");
 }
 
+/*Link handling.*/
 void handle_symbolic_link(char *linkname)
 {
     char option[10];
     start_link:
     print_menu_link();
-    printf("choose an option:\n");
+    printf("Choose an option from the menu:\n");
     scanf("%s", option);
     struct stat linkstat;
     for (int i = 1; i < strlen(option); i++)
@@ -157,27 +163,27 @@ void handle_symbolic_link(char *linkname)
         {
         case 'n':
         {
-            printf("linkl name: %s\n", getName(linkname));
+            printf("Link name: %s\n", getName(linkname));
             break;
         }
         case 'l':
         {
             if (unlink(linkname) < 0)
             {
-                printf("error: unable to delete symbolic link %s\n", linkname);
+                printf("Error: unable to delete symbolic link %s\n", linkname);
                 break;
             }
-            printf("symbolic link %s deleted\n", linkname);
+            printf("Symbolic link %s deleted\n", linkname);
             break;
         }
         case 'd':
         {
             if (lstat(linkname, &linkstat) < 0)
             {
-                printf("error: unable to stat %s\n", linkname);
+                printf("Error: unable to stat %s\n", linkname);
                 break;
             }
-            printf("file size: %lld bytes\n", (long long)linkstat.st_size);
+            printf("Symbolic link size: %lld bytes\n", (long long)linkstat.st_size);
             break;
         }
         case 't':
@@ -185,43 +191,44 @@ void handle_symbolic_link(char *linkname)
             struct stat targetstat;
             if (stat(linkname, &targetstat) < 0)
             {
-                printf("error: unable to stat target of %s\n", linkname);
+                printf("Error: unable to stat target of %s\n", linkname);
                 break;
             }
-            printf("size of target file: %lld bytes\n", (long long)targetstat.st_size);
+            printf("Size of target file: %lld bytes\n", (long long)targetstat.st_size);
             break;
         }
         case 'a':
         {
             if (lstat(linkname, &linkstat) < 0)
             {
-                printf("error: unable to stat %s\n", linkname);
+                printf("Error: unable to stat %s\n", linkname);
                 break;
             }
-            printf("access rights:\n");
-            printf("user:\n");
+            printf("Access rights:\n");
             printf("\n");
-            printf((linkstat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
-            printf((linkstat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
-            printf((linkstat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+            printf("User:\n");
             printf("\n");
-            printf("group:\n");
+            printf((linkstat.st_mode & S_IRUSR) ? "Read-yes\n" : "Read-yes\n");
+            printf((linkstat.st_mode & S_IWUSR) ? "Write-yes\n" : "Write-no\n");
+            printf((linkstat.st_mode & S_IXUSR) ? "Exec-yes\n" : "Exec-no\n");
             printf("\n");
-            printf((linkstat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
-            printf((linkstat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
-            printf((linkstat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+            printf("Group:\n");
             printf("\n");
-            printf("others:\n");
+            printf((linkstat.st_mode & S_IRGRP) ? "Read-yes\n" : "Read-yes\n");
+            printf((linkstat.st_mode & S_IWGRP) ? "Write-yes\n" : "Write-no\n");
+            printf((linkstat.st_mode & S_IXGRP) ? "Exec-yes\n" : "Exec-no\n");
             printf("\n");
-            printf((linkstat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
-            printf((linkstat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
-            printf((linkstat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+            printf("Others:\n");
+            printf("\n");
+            printf((linkstat.st_mode & S_IROTH) ? "Read-yes\n" : "Read-yes\n");
+            printf((linkstat.st_mode & S_IWOTH) ? "Write-yes\n" : "Write-no\n");
+            printf((linkstat.st_mode & S_IXOTH) ? "Exec-yes\n" : "Exec-no\n");
             printf("\n");
             break;
         }
         default:
         {
-            printf("invalid menu option. try again\n");
+            printf("Invalid menu option. Try again\n");
             goto start_link;
             break;
         }
@@ -229,21 +236,23 @@ void handle_symbolic_link(char *linkname)
     }
 }
 
+/*Directory menu display.*/
 void print_menu_directory()
 {
-    printf("C) directory:\n");
+    printf("C) Directory:\n");
     printf("-n: name\n");
     printf("-d: size\n");
     printf("-a: access rights\n");
-    printf("-c: total number of files with the c. extension\n");
+    printf("-c: total number of files with the .c extension\n");
 }
 
+/*Directory handling.*/
 void handle_directory(char *directorypath)
 {
     char option[10];
     start_directory:
     print_menu_directory();
-    printf("choose an option:\n");
+    printf("Choose an option from the menu:\n");
     scanf("%s", option);
     struct dirent *entry;
     struct stat filestat;
@@ -255,44 +264,45 @@ void handle_directory(char *directorypath)
         {
             case 'n':
             {
-                printf("directory name: %s\n", getName(directorypath));
+                printf("Directory name: %s\n", getName(directorypath));
                 break;
             }
             case 'd':
             {
                 if (lstat(directorypath, &filestat) < 0)
                 {
-                    printf("error: unable to stat %s\n", directorypath);
+                    printf("Error: unable to stat %s\n", directorypath);
                     break;
                 }
-                printf("file size: %lld bytes\n", (long long)filestat.st_size);
+                printf("Directory size: %lld bytes\n", (long long)filestat.st_size);
                 break;   
             }
             case 'a':
             {
                 if (lstat(directorypath, &filestat) < 0)
                 {
-                    printf("error: unable to stat %s\n", directorypath);
+                    printf("Error: unable to stat %s\n", directorypath);
                     break;
                 }
-                printf("access rights:\n");
-                printf("user:\n");
+                printf("Access rights:\n");
                 printf("\n");
-                printf((filestat.st_mode & S_IRUSR) ? "read-yes\n" : "read-yes\n");
-                printf((filestat.st_mode & S_IWUSR) ? "write-yes\n" : "write-no\n");
-                printf((filestat.st_mode & S_IXUSR) ? "exec-yes\n" : "exec-no\n");
+                printf("User:\n");
                 printf("\n");
-                printf("group:\n");
+                printf((filestat.st_mode & S_IRUSR) ? "Read-yes\n" : "Read-yes\n");
+                printf((filestat.st_mode & S_IWUSR) ? "Write-yes\n" : "Write-no\n");
+                printf((filestat.st_mode & S_IXUSR) ? "Exec-yes\n" : "Exec-no\n");
                 printf("\n");
-                printf((filestat.st_mode & S_IRGRP) ? "read-yes\n" : "read-yes\n");
-                printf((filestat.st_mode & S_IWGRP) ? "write-yes\n" : "write-no\n");
-                printf((filestat.st_mode & S_IXGRP) ? "exec-yes\n" : "exec-no\n");
+                printf("Group:\n");
                 printf("\n");
-                printf("others:\n");
+                printf((filestat.st_mode & S_IRGRP) ? "Read-yes\n" : "Read-yes\n");
+                printf((filestat.st_mode & S_IWGRP) ? "Write-yes\n" : "Write-no\n");
+                printf((filestat.st_mode & S_IXGRP) ? "Exec-yes\n" : "Exec-no\n");
                 printf("\n");
-                printf((filestat.st_mode & S_IROTH) ? "read-yes\n" : "read-yes\n");
-                printf((filestat.st_mode & S_IWOTH) ? "write-yes\n" : "write-no\n");
-                printf((filestat.st_mode & S_IXOTH) ? "exec-yes\n" : "exec-no\n");
+                printf("Others:\n");
+                printf("\n");
+                printf((filestat.st_mode & S_IROTH) ? "Read-yes\n" : "Read-yes\n");
+                printf((filestat.st_mode & S_IWOTH) ? "Write-yes\n" : "Write-no\n");
+                printf((filestat.st_mode & S_IXOTH) ? "Exec-yes\n" : "Exec-no\n");
                 printf("\n");
                 break;
             }
@@ -312,16 +322,16 @@ void handle_directory(char *directorypath)
                 }
                 else
                 {
-                    perror("couldn't open directory");
+                    perror("Couldn't open directory");
                     return;
                 }
-                printf("number of files with .c extension: %d\n", cFiles);
+                printf("Number of files with .c extension: %d\n", cFiles);
                 closedir(dir);
                 break;
             }
             default:
             {
-                printf("invalid menu option. try again\n");
+                printf("Invalid menu option. Try again\n");
                 goto start_directory;
                 break;
             }
@@ -329,6 +339,7 @@ void handle_directory(char *directorypath)
     }
 }
 
+/*Function for computing the score.*/
 int computeScore(int errors, int warnings)
 {
     int score;
@@ -351,6 +362,7 @@ int computeScore(int errors, int warnings)
     return score;
 }
 
+/*Changing link permissions to 'rwxrw----'*/
 void change_permission(char *linkname)
 {
     char *arguments[] = {"chmod", "-v", "760", linkname, NULL};
@@ -362,6 +374,7 @@ void change_permission(char *linkname)
     }
 }
 
+/*Counting the number of lines in a given file*/
 int countLines(char file[])
 {
     FILE *fin = fopen(file, "r");
@@ -391,8 +404,8 @@ int main(int argc, char *argv[])
     { 
         if (lstat(argv[i], &itemstat) < 0)
         {
-            printf("error: unable to stat %s\n", argv[i]);
-            continue;
+            printf("Error: unable to stat %s\n", argv[i]);
+            break;
         }
 
         if(pipe(fd) == -1)
@@ -404,58 +417,76 @@ int main(int argc, char *argv[])
         if (S_ISREG(itemstat.st_mode))
         {
             char *name = getName(argv[i]);
+            /*If it has the extension .c*/
             if(name[strlen(name)-2] == '.' && name[strlen(name)-1] == 'c')
             {
                 if((pid2 = fork()) < 0)
                 {
-                    printf("failed to create the second child process\n");
-                    exit(1);
+                    printf("Failed to create the second process\n");
+                    exit(0);
                 }
                 pidCount++;
+                /*Child process: */
                 if(pid2 == 0)
                 {
-                    /*closing the reading end*/
-                    close(fd[0]);
-                    dup2(fd[1], STDOUT_FILENO);
-                    char *arguments[] = {"bash", "errors.sh", name, "redirectError.txt", NULL};
-                    printf("this is a .c file, executing script\n");
+                    /*Closing the reading end*/
+                    if(close(fd[0]) == -1)
+                    {
+                        perror("close");
+                        exit(EXIT_FAILURE);
+                    }
+                    /*Setting the standard output*/
+                    if(dup2(fd[1], STDOUT_FILENO) == -1)
+                    {
+                        perror("dup2");
+                        exit(EXIT_FAILURE);
+                    }
+                    char *arguments[] = {"bash", "errors.sh", argv[i], "redirectError.txt", NULL};
+                    printf("This is a .c file, executing script...\n");
                     if(execv("/usr/bin/bash", arguments)==-1)
                     {
                         perror("execv");
                         exit(EXIT_FAILURE);
                     }
-                    exit(0);
+                    exit(1);
                 }
-                /*parent process*/
+                /*Parent process: */
                 else
                 {
                     int errors, warnings, score;
-                    close(fd[1]);
-                    FILE* fout = fopen("grades.txt", "a+");
+                    /*Closing the writing end*/
+                    if(close(fd[1]) == -1)
+                    {
+                        perror("close");
+                        exit(EXIT_FAILURE);
+                    }
+                    FILE* fout = fopen("grades.txt", "w");
                     ssize_t num_read;
                     while ((num_read = read(fd[0], buff, sizeof(buff))) > 0) {
                         sscanf(buff, "number of errors: %d number of warnings: %d", &errors, &warnings);
+                        printf("errors %d, warnings %d\n", errors, warnings);
+                        score = computeScore(errors,warnings);
+                        fprintf(fout, "%s:%d\n", name, score);
+                        printf("The score was printed in the file 'grades.txt'\n");
+                        fclose(fout);
                     }
-                    score = computeScore(errors,warnings);
-                    fprintf(fout, "%s:%d\n", name, score);
-                    printf("The score was printed in the file 'grades.txt'\n");
-                    fclose(fout);
                 }
             }
             else
             {
                 if((pid2 = fork()) < 0)
                 {
-                    printf("failed to create the second child process\n");
-                    exit(1);
+                    printf("Failed to create the second process\n");
+                    exit(2);
                 }
                 pidCount++;
+                /*Child process: */
                 if(pid2 == 0)
                 {
-                    /*closing the reading end*/
+                    /*Closing the reading end*/
                     close(fd[0]);
-                    printf("the file %s has %d lines\n", name, countLines(argv[i]));
-                    exit(0);
+                    printf("The file %s has %d lines\n", name, countLines(argv[i]));
+                    exit(3);
                 }
             }
         }
@@ -464,10 +495,11 @@ int main(int argc, char *argv[])
             char *name = getName(argv[i]);
             if((pid2 = fork()) < 0)
             {
-                printf("failed to create the second child process\n");
-                exit(1);
+                printf("Failed to create the second process\n");
+                exit(0);
             }
             pidCount++;
+            /*Child process: */
             if(pid2 == 0)
             {
                 change_permission(name);
@@ -479,56 +511,58 @@ int main(int argc, char *argv[])
             char *name = getName(argv[i]);
             if((pid2 = fork()) < 0)
             {
-                printf("failed to create the second child process\n");
-                exit(1);
+                printf("Failed to create the second process\n");
+                exit(0);
             }
             pidCount++;
+            /*Child process: */
             if(pid2 == 0)
             {
                 char filename[50] = "";
                 strcpy(filename, name);
                 strcat(filename, "_file.txt");
                 char *arguments[] = {"touch", filename, NULL};
-                printf("creating a txt file with the name '<dir_name>_file.txt'\n");
+                printf("Creating a txt file with the name '<dir_name>_file.txt'\n");
                 if(execv("/usr/bin/touch", arguments)==-1)
                 {
                     perror("execv");
                     exit(EXIT_FAILURE);
                 }
-                exit(0);
+                exit(1);
             }
         }
         
         if((pid1 = fork()) < 0)
         {
-            printf("failed to create the child process \n");
+            printf("Failed to create the process \n");
             exit(1);
         }
         pidCount++;
+        /*Child process: */
         if(pid1 == 0)
         {
             if (S_ISREG(itemstat.st_mode))
             {
-                printf("%s %s\n", getName(argv[i]), "regular file");
+                printf("%s %s\n", getName(argv[i]), "Regular file");
                 handle_regular_file(argv[i]);
             }
             else if (S_ISLNK(itemstat.st_mode))
             {
-                printf("%s %s\n", getName(argv[i]), "symbolic link");
+                printf("%s %s\n", getName(argv[i]), "Symbolic link");
                 handle_symbolic_link(argv[i]);
             }
             else if (S_ISDIR(itemstat.st_mode))
             {
-                printf("%s %s\n", getName(argv[i]), "directory");
+                printf("%s %s\n", getName(argv[i]), "Directory");
                 handle_directory(argv[i]);
             }
             else
             {
-                printf("unknown file type: %s\n", argv[i]);
+                printf("Unknown file type: %s\n", argv[i]);
             }
-            exit(0);
+            exit(2);
         }
-        printf("PID COUNT %d\n", pidCount);
+
         for(int i=0; i<pidCount;i++)
         {
             int wstatus;
@@ -545,6 +579,5 @@ int main(int argc, char *argv[])
         }
         pidCount = 0;
     }
-    
     return 0;
 }
